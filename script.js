@@ -3,38 +3,26 @@
   const canvas = document.getElementById('canvas');
   const workflowPane = document.getElementById('workflowPane');
 
-  // Simulation Steps
   const animationSteps = [
     { type: 'Table Grid', x: 50, y: 50 },
     { type: 'Textbox', x: 200, y: 50 },
     { type: 'Button', x: 200, y: 150 },
   ];
 
-  // Automatically simulate drag-and-drop
   let currentStep = 0;
 
-  function simulateDragDrop() {
-    if (currentStep >= animationSteps.length) return;
-
-    const { type, x, y } = animationSteps[currentStep];
-    createComponentElement(type, x, y);
-
-    currentStep++;
-    setTimeout(simulateDragDrop, 1000); // Delay between steps
-  }
-
-  // Add drag-and-drop functionality
+  // Drag and Drop Events
   components.forEach(component => {
-    component.addEventListener('dragstart', event => {
+    component.addEventListener('dragstart', (event) => {
       event.dataTransfer.setData('text/plain', component.dataset.type);
     });
   });
 
-  canvas.addEventListener('dragover', event => {
+  canvas.addEventListener('dragover', (event) => {
     event.preventDefault();
   });
 
-  canvas.addEventListener('drop', event => {
+  canvas.addEventListener('drop', (event) => {
     event.preventDefault();
     const type = event.dataTransfer.getData('text/plain');
     const x = event.clientX - canvas.getBoundingClientRect().left;
@@ -42,7 +30,7 @@
     createComponentElement(type, x, y);
   });
 
-  // Create dropped component
+  // Create Component Element on Canvas
   function createComponentElement(type, x, y) {
     const element = document.createElement('div');
     element.className = `dropped ${type.toLowerCase()}`;
@@ -59,6 +47,17 @@
     canvas.appendChild(element);
   }
 
-  // Start simulation after DOM is loaded
-  window.addEventListener('DOMContentLoaded', simulateDragDrop);
+  // Animation Logic
+  function runSimulation() {
+    if (currentStep >= animationSteps.length) return;
+
+    const { type, x, y } = animationSteps[currentStep];
+    createComponentElement(type, x, y);
+    currentStep++;
+
+    setTimeout(runSimulation, 1000); // 1 second delay between each step
+  }
+
+  // Start Simulation on Page Load
+  window.addEventListener('DOMContentLoaded', runSimulation);
 </script>
