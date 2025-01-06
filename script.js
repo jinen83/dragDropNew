@@ -1,4 +1,4 @@
-<script>
+
   const components = document.querySelectorAll('.component');
   const canvas = document.getElementById('canvas');
   const workflowPane = document.getElementById('workflowPane');
@@ -60,4 +60,4 @@
 
   // Start Simulation on Page Load
   window.addEventListener('DOMContentLoaded', runSimulation);
-</script>
+
