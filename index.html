@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag and Drop UI Builder Animation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f5f5f5;
+      font-size: 14px; /* Smaller font for body */
+    }
+
+    .builder-container {
+      display: flex;
+      width: 90%;
+      max-width: 1200px;
+      height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+      position: relative;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f9f9f9;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .header img {
+      height: 30px;
+    }
+
+    .preview-button {
+      padding: 5px 10px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .preview-button:hover {
+      background: #0056b3;
+    }
+
+    .components-frame {
+      width: 25%;
+      border-right: 1px solid #ddd;
+      padding: 10px;
+      background: #f9f9f9;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .components-frame .search-bar {
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+    }
+
+    .components-frame .search-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .components-frame .search-bar span {
+      font-size: 16px;
+      margin-right: 5px;
+      color: #888;
+    }
+
+    .component {
+      padding: 10px;
+      background: #eef;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px; /* Smaller font for components */
+    }
+
+    .component span {
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+
+    .canvas {
+      width: 75%;
+      padding: 10px;
+      position: relative;
+    }
+
+    .canvas h2 {
+      text-align: center;
+      margin: 0 0 10px;
+      font-size: 14px; /* Smaller font for canvas */
+    }
+
+    .canvas-dropzone {
+      width: 100%;
+      height: calc(100% - 40px);
+      border: 2px dashed #bbb;
+      border-radius: 8px;
+      background: #fafafa;
+      position: relative;
+    }
+
+    .dropped {
+      position: absolute;
+      padding: 10px;
+      background: #e1f5fe;
+      border: 1px solid #00bcd4;
+      border-radius: 4px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .dropped.textbox input {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .dropped.radio label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .dropped.radio input {
+      margin-right: 10px;
+    }
+
+    .dropped.table-grid table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .dropped.table-grid th, .dropped.table-grid td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .dropped.table-grid th {
+      background: #f2f2f2;
+    }
+
+    .dropped.selected-row {
+      background-color: #c8e6c9;
+    }
+
+    .mouse-pointer {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: black;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .workflow-pane {
+      position: fixed;
+      bottom: -80%;
+      left: 0;
+      width: 100%;
+      height: 80%;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: bottom 0.5s ease;
+    }
+
+    .workflow-pane.open {
+      bottom: 0;
+    }
+
+    .workflow-controls {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .workflow-controls button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .workflow-controls button:hover {
+      background: #0056b3;
+    }
+
+    .workflow-controls .plus-button {
+      font-size: 24px;
+      background: #28a745;
+    }
+
+    .workflow-controls .plus-button:hover {
+      background: #218838;
+    }
+
+    .workflow-controls .stop-button {
+      background: #dc3545;
+    }
+
+    .workflow-controls .stop-button:hover {
+      background: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div class="builder-container">
+    <div class="header">
+      <img src="https://dms-bucket-727.s3.amazonaws.com/logos/DronaHQ_Logo_Dark.png?AWSAccessKeyId=AKIAQB6LFHGEI7EAK3UF&Expires=1767688945&Signature=g0IHqTJaO9tmYgs1Jwt%2FvWqpmLI%3D" alt="DronaHQ Logo">
+      <button class="preview-button">Preview</button>
+    </div>
+    <div style="display: flex; flex: 1;">
+      <div class="components-frame">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Search components...">
+        </div>
+        <div class="component" data-type="Textbox">
+          <span>📄</span>
+          Textbox
+        </div>
+        <div class="component" data-type="Radio Button">
+          <span>🔘</span>
+          Radio Button
+        </div>
+        <div class="component" data-type="Table Grid">
+          <span>📋</span>
+          Table Grid
+        </div>
+        <div class="component" data-type="Button">
+          <span>🔲</span>
+          Button
+        </div>
+        <div class="component" data-type="Checkbox">
+          <span>☑️</span>
+          Checkbox
+        </div>
+        <div class="component" data-type="Dropdown">
+          <span>⬇️</span>
+          Dropdown
+        </div>
+        <div class="component" data-type="Slider">
+          <span>🎚️</span>
+          Slider
+        </div>
+        <div class="component" data-type="Date Picker">
+          <span>📅</span>
+          Date Picker
+        </div>
+      </div>
+      <div class="canvas">
+        <h2>Canvas</h2>
+        <div class="canvas-dropzone" id="canvas"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="workflow-pane" id="workflowPane">
+    <div class="workflow-controls">
+      <button class="start-button">Start</button>
+      <button class="plus-button">+</button>
+      <button class="stop-button">Stop</button>
+    </div>
+  </div>
+
+  <script>
+    const components = document.querySelectorAll('.component');
+    const canvas = document.getElementById('canvas');
+    const workflowPane = document.getElementById('workflowPane');
+
+    components.forEach(component => {
+      component.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/plain', component.dataset.type);
+      });
+    });
+
+    canvas.addEventListener('dragover', (event) => {
+      event.preventDefault();
+    });
+
+    canvas.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const type = event.dataTransfer.getData('text/plain');
+      const x = event.clientX - canvas.getBoundingClientRect().left;
+      const y = event.clientY - canvas.getBoundingClientRect().top;
+      createComponentElement(type, x, y);
+    });
+
+    function createComponentElement(type, x, y) {
+      const element = document.createElement('div');
+      element.className = `dropped ${type.toLowerCase()}`;
+      element.style.left = `${x}px`;
+      element.style.top = `${y}px`;
+      element.textContent = type;
+
+      // Add workflow-pane for button
+      if (type === 'Button') {
+        element.addEventListener('click', () => {
+          workflowPane.classList.toggle('open');
+        });
+      }
+
+      canvas.appendChild(element);
+    }
+  </script>
+</body>
+</html>
